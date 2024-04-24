@@ -42,6 +42,21 @@ docker run \
 
 Now visit http://localhost to see whatsapp-dev
 
+## Options:
+
+| name                          | flag                          | env                        | default                           |
+| ----------------------------- | ----------------------------- | -------------------------- | --------------------------------- |
+| webhook url (required)        | `--webhook-url` `-w`          | `WEBHOOK_URL`              |                                   |
+| webhook verify token          | `--webhook-verify-token` `-t` | `WEBHOOK_VERIFY_TOKEN`     | _Randomly generated_              |
+| Secrets seed                  | `--secrets-seed` `-s`         | `SECRETS_SEED`             | `fallback-secrets-seed`           |
+| HTTP address                  | `--http-addr` `-a`            | `HTTP_ADDR`                | `:3000`                           |
+| HTTP server username          | `--http-username` `-u`        | `HTTP_USERNAME`            | _No auth required if not defined_ |
+| HTTP server password          | `--http-password` `-p`        | `HTTP_PASSWORD`            | _No auth required if not defined_ |
+| Mocked phone number           | `--whatsapp-phone-number`     | `WHATSAPP_PHONE_NUMBER`    | _Randomly generated_              |
+| Mocked phone number id        | `--whatsapp-phone-number-id`  | `WHATSAPP_PHONE_NUMBER_ID` | _Randomly generated_              |
+| Facebook Graph token          | `--facebook-graph-token`      | `FACEBOOK_GRAPH_TOKEN`     | _Randomly generated_              |
+| Facebook developer app secret | `--facebook-app-secret`       | `FACEBOOK_APP_SECRET`      | _Randomly generated_              |
+
 ## From WhatsApp business API to this?
 
 Replace `https://graph.facebook.com` with a instance of WhatsApp-Dev and assuming you have setup your instance of WhatsApp-Dev the same as the real api this should be all.

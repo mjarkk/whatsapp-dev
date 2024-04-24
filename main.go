@@ -43,15 +43,15 @@ func main() {
 	defaultHttpAddr := ":1090"
 
 	webHookURL := argOrEnv("webhook-url", "w", "WEBHOOK_URL", "", "Webhook URL")
-	webHookVerivyToken := argOrEnv("webhook-verify-token", "t", "WEBHOOK", "", "Webhook verify token")
-	secretesSeed := argOrEnv("secrets-seed", "", "SECRETS_SEED", "", "Secrets seed for generating a random graph-token")
+	webHookVerivyToken := argOrEnv("webhook-verify-token", "t", "WEBHOOK_VERIFY_TOKEN", "", "Webhook verify token")
+	secretesSeed := argOrEnv("secrets-seed", "s", "SECRETS_SEED", "", "Secrets seed for generating a random graph-token")
 	httpAddr := argOrEnv("http-addr", "a", "HTTP_ADDR", defaultHttpAddr, "HTTP address")
 	httpUsername := argOrEnv("http-username", "u", "HTTP_USERNAME", "", "HTTP username")
 	httpPassword := argOrEnv("http-password", "p", "HTTP_PASSWORD", "", "HTTP password")
 	phoneNumber := argOrEnv("whatsapp-phone-number", "", "WHATSAPP_PHONE_NUMBER", "", "Define the mocked phone number")
 	phoneNumberID := argOrEnv("whatsapp-phone-number-id", "", "WHATSAPP_PHONE_NUMBER_ID", "", "Define the mocked phone number id")
 	graphToken := argOrEnv("facebook-graph-token", "", "FACEBOOK_GRAPH_TOKEN", "", "Define mock graph token")
-	appSecret := argOrEnv("facebook-app-secret", "", "FACEBOOK_APP_SECRET", "", "Define the mocked phone number id")
+	appSecret := argOrEnv("facebook-app-secret", "", "FACEBOOK_APP_SECRET", "", "Define the Facebook app secret")
 
 	pflag.Parse()
 
