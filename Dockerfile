@@ -1,5 +1,9 @@
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
 # Build the frontend container
-FROM node:21-slim AS frontend
+FROM --platform=linux/amd64 node:21-slim AS frontend
 
 COPY . /app
 WORKDIR /app
@@ -7,7 +11,7 @@ WORKDIR /app
 RUN npm i && npm run build
 
 # Build the runtime container
-FROM golang:1.21
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21
 
 WORKDIR /usr/src/app
 
