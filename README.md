@@ -26,8 +26,6 @@ go run . --webhook-url http://your-app-webhook.local:8080/webhook
 ## Docker setup and run
 
 ```sh
-docker build -t whatsapp-dev .
-
 # IMPORTANT! If you don't do this docker will create a folder instaid of a file
 touch db.sqlite
 
@@ -36,7 +34,7 @@ docker run \
   --rm \
   -p 80:1090 \
   -v `pwd`/db.sqlite:/usr/src/app/db.sqlite \
-  whatsapp-dev \
+  ghcr.io/mjarkk/mini-mail-dev:latest \
   app --webhook-url http://your-app-webhook.local:8080/api/webhook
 ```
 
