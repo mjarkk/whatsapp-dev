@@ -57,6 +57,8 @@ Now visit http://localhost to see whatsapp-dev
 | Facebook Graph token          | `--facebook-graph-token`      | `FACEBOOK_GRAPH_TOKEN`     | _Randomly generated_              |
 | Facebook developer app secret | `--facebook-app-secret`       | `FACEBOOK_APP_SECRET`      | _Randomly generated_              |
 
+_Note that all randomly generated values are generated using the secrets seed if you don't change your seed all randomly generated values will stay the same when restarting the service_
+
 ## From WhatsApp business API to this?
 
 Replace `https://graph.facebook.com` with a instance of WhatsApp-Dev and assuming you have setup your instance of WhatsApp-Dev the same as the real api this should be all.
