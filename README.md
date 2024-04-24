@@ -35,7 +35,7 @@ docker run \
   -p 80:1090 \
   -v `pwd`/db.sqlite:/usr/src/app/db.sqlite \
   whatsapp-dev \
-  whatsapp-dev --webhook-url http://your-app-webhook.local:8080/webhook
+  app --webhook-url http://your-app-webhook.local:8080/api/webhook
 ```
 
 Now visit http://localhost to see whatsapp-dev
