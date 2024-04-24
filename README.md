@@ -15,6 +15,31 @@ This API is mainly designed for 2 things:
   - Support Website, Phone number and Promo offer action buttons (currently only quick reply is supported)
   - Support Media header (currently only text is supported)
 
+## Local setup and run
+
+```
+go run . --webhook-url http://your-app-webhook.local:8080/webhook
+```
+
+## Docker setup and run
+
+```sh
+docker build -t whatsapp-dev .
+
+# IMPORTANT! If you don't do this docker will create a folder instaid of a file
+touch db.sqlite
+
+docker run \
+  -it \
+  --rm \
+  -p 80:1090 \
+  -v `pwd`/db.sqlite:/usr/src/app/db.sqlite \
+  whatsapp-dev \
+  whatsapp-dev --webhook-url http://your-app-webhook.local:8080/webhook
+```
+
+Now visit http://localhost to see whatsapp-dev
+
 ## From WhatsApp business API to this?
 
 Replace `https://graph.facebook.com` with a instance of WhatsApp-Dev and assuming you have setup your instance of WhatsApp-Dev the same as the real api this should be all.
