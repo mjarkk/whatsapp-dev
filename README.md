@@ -32,9 +32,9 @@ touch db.sqlite
 docker run \
   -it \
   --rm \
-  -p 80:1090 \
+  -p 1090:1090 \
   -v `pwd`/db.sqlite:/usr/src/app/db.sqlite \
-  ghcr.io/mjarkk/mini-mail-dev:latest \
+  ghcr.io/mjarkk/whatsapp-dev:latest \
   app --webhook-url http://your-app-webhook.local:8080/api/webhook
 ```
 
