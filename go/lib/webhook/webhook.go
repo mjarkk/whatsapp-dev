@@ -52,9 +52,11 @@ func Validate() error {
 	randomSource := rand.New(rand.NewSource(time.Now().Unix()))
 	challenge := random.Hex(randomSource, 16)
 
-	url.Query().Add("hub.mode", "subscribe")
-	url.Query().Add("hub.verivy_token", state.WebhookVerifyToken.Get())
-	url.Query().Add("hub.challenge", challenge)
+	query := url.Query()
+	query.Add("hub.mode", "subscribe")
+	query.Add("hub.verify_token", state.WebhookVerifyToken.Get())
+	query.Add("hub.challenge", challenge)
+	url.RawQuery = query.Encode()
 
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {

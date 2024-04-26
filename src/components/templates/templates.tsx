@@ -16,6 +16,7 @@ import { useEffect, useState, Fragment } from "react"
 import { DBModel, emptyDBModel } from "@/lib/types"
 import { TrashIcon } from "@radix-ui/react-icons"
 import { OpenCloseButton } from "../openCloseButton"
+import { Textarea } from "@/components/ui/textarea"
 
 interface Template extends DBModel {
 	name: string
@@ -176,17 +177,49 @@ function NewTemplateDialog({
 		setState(emptyTemplate())
 	}
 
+	const addButton = () =>
+		setState((s) => {
+			let text = "Button text"
+			if (s.templateCustomButtons.length > 0) {
+				text += " " + (s.templateCustomButtons.length + 1)
+			}
+
+			s.templateCustomButtons.push({
+				...emptyDBModel(),
+				templateID: s.ID,
+				text,
+			})
+
+			return { ...s }
+		})
+
+	const setButtonText = (idx: number, text: string) =>
+		setState((s) => {
+			s.templateCustomButtons[idx].text = text
+			return { ...s }
+		})
+
+	const removeButton = (idx: number) =>
+		setState((s) => {
+			s.templateCustomButtons.splice(idx, 1)
+			return { ...s }
+		})
+
+	const intermediateClose = () => {
+		close()
+		setState(emptyTemplate())
+	}
+
 	return (
-		<AlertDialog open={open} onOpenChange={() => close()}>
+		<AlertDialog open={open} onOpenChange={() => intermediateClose()}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Create a new conversation</AlertDialogTitle>
-					<AlertDialogDescription></AlertDialogDescription>
 				</AlertDialogHeader>
 				<Label htmlFor="header">Name</Label>
 				<Input
 					value={state.name}
-					onChange={(e) => setState((s) => ({ ...s, header: e.target.value }))}
+					onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
 					name="name"
 					id="name"
 					placeholder="hello_world"
@@ -200,12 +233,13 @@ function NewTemplateDialog({
 					placeholder="Header"
 				/>
 				<Label htmlFor="body">Body</Label>
-				<Input
+				<Textarea
 					value={state.body}
 					onChange={(e) => setState((s) => ({ ...s, body: e.target.value }))}
 					name="body"
 					id="body"
 					placeholder="Hello world!"
+					h-30
 				/>
 				<Label htmlFor="footer">Footer</Label>
 				<Input
@@ -215,10 +249,38 @@ function NewTemplateDialog({
 					id="footer"
 					placeholder="Hello world!"
 				/>
+
+				{state.templateCustomButtons.length ? (
+					<Label htmlFor="footer">Buttons</Label>
+				) : undefined}
+				{state.templateCustomButtons.map((btn, idx) => (
+					<div key={idx} flex w-full items-center gap-4>
+						<div>
+							<Button onClick={() => removeButton(idx)} variant="ghost">
+								<TrashIcon />
+							</Button>
+						</div>
+						<div flex-1>
+							<Label htmlFor="footer">Button #{idx + 1}</Label>
+							<Input
+								value={btn.text}
+								onChange={(e) => setButtonText(idx, e.target.value)}
+								name={"button-" + idx}
+								id={"button-" + idx}
+								placeholder="Hello world!"
+							/>
+						</div>
+					</div>
+				))}
+				<div>
+					<Button variant="secondary" onClick={addButton}>
+						New button
+					</Button>
+				</div>
 				<AlertDialogFooter>
 					<AlertDialogCancel>Cancel</AlertDialogCancel>
 					<AlertDialogAction onClick={createConversation}>
-						Start
+						Create
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

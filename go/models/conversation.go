@@ -16,13 +16,22 @@ type Conversation struct {
 
 type Message struct {
 	gorm.Model
-	ConversationID uint      `json:"conversationId"`
-	WhatsappID     string    `json:"whatsappID"`
-	Direction      Direction `json:"direction"`
-	HeaderMessage  *string   `json:"headerMessage"`
-	Message        string    `json:"message"`
-	FooterMessage  *string   `json:"footerMessage"`
-	Timestamp      int64     `json:"timestamp"`
+	ConversationID uint            `json:"conversationId"`
+	WhatsappID     string          `json:"whatsappID"`
+	Direction      Direction       `json:"direction"`
+	HeaderMessage  *string         `json:"headerMessage"`
+	Message        string          `json:"message"`
+	FooterMessage  *string         `json:"footerMessage"`
+	Timestamp      int64           `json:"timestamp"`
+	Buttons        []MessageButton `json:"buttons"`
+}
+
+type MessageButton struct {
+	gorm.Model
+	ConversationID uint    `json:"conversationId"`
+	MessageID      uint    `json:"messageId"`
+	Text           string  `json:"text"`
+	Payload        *string `json:"payload"`
 }
 
 type Direction string

@@ -128,6 +128,7 @@ func main() {
 		&models.Message{},
 		&models.Template{},
 		&models.TemplateCustomButton{},
+		&models.MessageButton{},
 	)
 
 	templatesCount := int64(0)
@@ -149,7 +150,9 @@ func main() {
 
 	go func() {
 		err := webhook.Validate()
-		if err != nil {
+		if err == nil {
+			fmt.Println("Webhook validated successfully")
+		} else {
 			fmt.Println("Failed to validate webhook:", err.Error())
 		}
 	}()

@@ -13,7 +13,7 @@ import (
 
 func Index(c *fiber.Ctx) error {
 	conversation := []models.Conversation{}
-	err := DB.Model(&models.Conversation{}).Preload("Messages").Find(&conversation).Error
+	err := DB.Model(&models.Conversation{}).Preload("Messages.Buttons").Find(&conversation).Error
 	if err != nil {
 		return err
 	}

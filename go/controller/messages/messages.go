@@ -226,16 +226,18 @@ type TemplateOptions struct {
 		Code   string `json:"code"`   // "en_US", "en"
 		Policy string `json:"policy"` // "deterministic"
 	} `json:"language"` // { "code": "en_US" }
-	Components []struct {
-		Type       string `json:"type"`    // "body", "button"
-		SubType    string `json:"subType"` // "quick_reply" (in case of button)
-		Index      string `json:"index"`   // "0" (in case of button)
-		Parameters []struct {
-			Type    string `json:"type"`    // "header", "text", "payload"
-			Payload string `json:"payload"` // "hello_world" (in case of payload)
-			Text    string `json:"text"`    // "Hello World" (in case of text)
-		} `json:"parameters"`
-	} `json:"components"`
+	Components []TemplateComponent `json:"components"`
+}
+
+type TemplateComponent struct {
+	Type       string `json:"type"`    // "body", "button"
+	SubType    string `json:"subType"` // "quick_reply" (in case of button)
+	Index      string `json:"index"`   // "0" (in case of button)
+	Parameters []struct {
+		Type    string `json:"type"`    // "header", "text", "payload"
+		Payload string `json:"payload"` // "hello_world" (in case of payload)
+		Text    string `json:"text"`    // "Hello World" (in case of text)
+	} `json:"parameters"`
 }
 
 func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phonenumber.ParsedPhoneNumber) error {
@@ -251,7 +253,7 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 	}
 
 	msgTemplate := models.Template{}
-	err := DB.Model(&models.Template{}).Where("name = ?", template.Name).First(&msgTemplate).Error
+	err := DB.Model(&models.Template{}).Where("name = ?", template.Name).Preload("TemplateCustomButtons").First(&msgTemplate).Error
 	if err != nil {
 		msg := "(#132001) Template name does not exist in the translation"
 		details := fmt.Sprintf("template name (%s) does not exist in %s", template.Name, template.Language.Code)
@@ -260,10 +262,11 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 
 	var requestBodyVariables []string
 	var requestHeaderVariables []string
+	var buttons []TemplateComponent
 	for idx, component := range template.Components {
 		switch component.Type {
 		case "button":
-			// TODO
+			buttons = append(buttons, component)
 		case "body":
 			if requestBodyVariables != nil {
 				return customError(c, "There can be at max 1 body component")
@@ -328,7 +331,77 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 		}
 	}
 
-	// FIXME validate request buttons
+	if len(msgTemplate.TemplateCustomButtons) != len(buttons) {
+		msg := "(#132000) Number of parameters does not match the expected number of params"
+		details := fmt.Sprintf(
+			"number of buttons (%d) does not match the expected number of params (%d)",
+			len(buttons),
+			len(msgTemplate.TemplateCustomButtons),
+		)
+		return customError(c, msg, details)
+	}
+
+	if buttons != nil {
+		type ButtonPayload struct {
+			Seen    bool
+			Payload string
+		}
+
+		buttonsPayload := make([]ButtonPayload, len(buttons))
+
+		for idx, button := range buttons {
+			prefix := fmt.Sprintf("template['components'][%d]", idx)
+
+			if button.Index == "" {
+				return customError(c, fmt.Sprintf("Param %s['index'] is required", prefix))
+			}
+			if button.SubType == "" {
+				return customError(c, fmt.Sprintf("Param %s['subType'] is required", prefix))
+			}
+			if button.SubType != "quick_reply" {
+				return customError(c, fmt.Sprintf("Param %s['subType'] must be one of {QUICK_REPLY}", prefix))
+			}
+
+			switch len(button.Parameters) {
+			case 0:
+				return customError(c, fmt.Sprintf("Param %s['parameters'] is required", prefix))
+			case 1:
+				// continue
+			default:
+				return customError(c, fmt.Sprintf("Param %s['parameters'] must have at max 1 element", prefix))
+			}
+			firstParam := button.Parameters[0]
+			if firstParam.Type == "" {
+				return customError(c, fmt.Sprintf("Param %s['parameters'][0]['type'] is required", prefix))
+			}
+			if firstParam.Type != "payload" {
+				return customError(c, fmt.Sprintf("Param %s['parameters'][0]['type'] must be one of {PAYLOAD}", prefix))
+			}
+			if firstParam.Payload == "" {
+				return customError(c, fmt.Sprintf("Param %s['parameters'][0]['payload'] is required", prefix))
+			}
+
+			buttonIndex, err := strconv.Atoi(button.Index)
+			if err != nil {
+				return customError(c, fmt.Sprintf("Param %s['index'] must be a number", prefix))
+			}
+			if buttonIndex < 0 || buttonIndex >= len(buttonsPayload) {
+				return customError(c, fmt.Sprintf("Param %s['index'] must be between 0 and %d", prefix, len(buttonsPayload)-1))
+			}
+
+			buttonsPayload[buttonIndex] = ButtonPayload{
+				Seen:    true,
+				Payload: firstParam.Payload,
+			}
+		}
+
+		for idx, btn := range buttonsPayload {
+			if !btn.Seen {
+				return customError(c, fmt.Sprintf("Button with index %d missing", idx))
+			}
+		}
+
+	}
 
 	message := &models.Message{
 		WhatsappID:    to.WhatsappMessageID,

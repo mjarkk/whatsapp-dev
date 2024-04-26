@@ -3,7 +3,6 @@ import {
 	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
-	AlertDialogDescription,
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
@@ -182,7 +181,6 @@ function NewChatDialog({ newConversation, open, close }: NewChatDialogProps) {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Create a new conversation</AlertDialogTitle>
-					<AlertDialogDescription></AlertDialogDescription>
 				</AlertDialogHeader>
 				<Label htmlFor="phoneNumber">Source phone number</Label>
 				<Input
