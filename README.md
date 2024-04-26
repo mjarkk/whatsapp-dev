@@ -1,21 +1,13 @@
 # WhatsApp-Dev
 
-![Screenshot](/screenshot.jpeg?raw=true "Screnshot")
+![Screenshot](/screenshot.jpeg?raw=true "Screenshot")
 
-Maildev but for the WhatsApp business API.
+Maildev, but for the WhatsApp business API.
 
 This API is mainly designed for 2 things:
 
-1. Locally test whatsapp API code without all the hassle of the WhatsApp's testing phone number (handy if you work with multiple people)
-2. Staging / Testing envourments where you freely want to test your whatsapp integration code but don't want to be scared of accedentially sending messages to real people or be limited to the testing API and have to change your api key every day.
-
-## Limitations / TODO
-
-- Sending something other than text messages like images, videos, sticker, etc..
-- Send status updates via the webhook
-- Templates
-  - Support Website, Phone number and Promo offer action buttons (currently only quick reply is supported)
-  - Support Media header (currently only text is supported)
+1. Locally test WhatsApp API code without all the hassle of the WhatsApp's testing phone number (handy if you work with multiple people)
+2. Staging / Testing environment where you can freely test your WhatsApp integration code and don't have to be afraid of accidentally sending messages to real people or be limited to the testing API and have to change your api key every single day.
 
 ## Local setup and run
 
@@ -26,7 +18,7 @@ go run . --webhook-url http://your-app-webhook.local:8080/webhook
 ## Docker setup and run
 
 ```sh
-# IMPORTANT! If you don't do this docker will create a folder instaid of a file
+# IMPORTANT! If you don't do this, docker will create a folder instead of a file
 touch db.sqlite
 
 docker run \
@@ -38,7 +30,7 @@ docker run \
   app --webhook-url http://your-app-webhook.local:8080/api/webhook
 ```
 
-Now visit http://localhost to see whatsapp-dev
+Now visit http://localhost:1090 to see whatsapp-dev
 
 ## Options:
 
@@ -55,15 +47,23 @@ Now visit http://localhost to see whatsapp-dev
 | Facebook Graph token          | `--facebook-graph-token`      | `FACEBOOK_GRAPH_TOKEN`     | _Randomly generated_              |
 | Facebook developer app secret | `--facebook-app-secret`       | `FACEBOOK_APP_SECRET`      | _Randomly generated_              |
 
-_Note that all randomly generated values are generated using the secrets seed if you don't change your seed all randomly generated values will stay the same when restarting the service_
+_Note that all randomly generated values are generated using the secrets seed. If you don't change your seed, all randomly generated values will stay the same when restarting the service_
+
+## Limitations / TODO
+
+- Sending something other than text messages like images, videos, stickers, etc..
+- Send status updates via the webhook
+- Templates
+  - Support Website, Phone number and Promo offer action buttons (currently only quick reply is supported)
+  - Support Media header (currently only text is supported)
 
 ## From WhatsApp business API to this?
 
-Replace `https://graph.facebook.com` with a instance of WhatsApp-Dev and assuming you have setup your instance of WhatsApp-Dev the same as the real api this should be all.
+Replace `https://graph.facebook.com` with an instance of WhatsApp-Dev and, assuming you have setup your instance of WhatsApp-Dev the same as the real api, this should be 👌.
 
 Note that if your instance of WhatsApp-Dev has different credentials then the real API you also need to change those.
 
-It's recomment to use diffrent credentials for this and the real api.
+It's recommended to use different credentials for this and the real api.
 
 ## Going from this to the real api?
 
@@ -73,14 +73,15 @@ Here is a rough outline of what you need todo:
   - App kind: **Other**
   - App type: **Company**
 - Add WhatsApp as product
-- You will probably hit a roadblock here and need to verivy your facebook business
-- Add a (real) phone number under Whatsapp > Api Setup
-- Setup a webhook (that works. important!) under Whatsapp > Configuration
+- You will probably hit a roadblock here and need to verify your Facebook business
+- Add a (real) phone number under WhatsApp > Api Setup
+- Setup a webhook under WhatsApp > Configuration
+  - Note: the webhook url must point to a working service
 - Toggle the live mode within your API
-- Add a creditcard to your facebook bussness here: [business.facebook.com](https://business.facebook.com/billing_hub/accounts/details)
-  - Note the selected org MUST the same as the org used to created your facebook app earlier
-  - Also add your creditcard under Accounts > Whatsapp Business-accounts
+- Add a credit card to your Facebook business here: [business.facebook.com](https://business.facebook.com/billing_hub/accounts/details)
+  - Note: the selected org MUST the same as the org used to created your Facebook app earlier
+  - Also add your credit card under Accounts > WhatsApp business accounts
 
-Now you _should_ beable to send the hello_world template using your real phone number (note that this cost money 💸)
+Now you _should_ be able to send the _hello_world_ template using your real phone number (note that this cost money 💸)
 
 You can add new templates on this website [business.facebook.com](https://business.facebook.com/wa/manage/home/)
