@@ -73,7 +73,7 @@ func ReplaceVariables(input string, varValues []string) string {
 		if variableNumber <= 0 {
 			return variablePlaceholder
 		}
-		if variableNumber >= len(varValues) {
+		if variableNumber > len(varValues) {
 			return variablePlaceholder
 		}
 		return varValues[variableNumber-1]

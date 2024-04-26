@@ -44,6 +44,7 @@ func apiRoutes(r fiber.Router) {
 	r.Get("/conversations", conversations.Index)
 	r.Post("/conversations", conversations.Create)
 	r.Post("/conversations/:id", conversations.CreateMessage)
+	r.Post("/conversations/:id/btnQuickReply/:btnId", conversations.BtnQuickReply)
 
 	r.Get("/templates", templates.Index)
 	r.Post("/templates", templates.Create)

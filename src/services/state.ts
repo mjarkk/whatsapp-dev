@@ -23,13 +23,19 @@ export interface Message extends DBModel {
 	message: string
 	headerMessage: string
 	timestamp: number
+	buttons: null | Array<MessageButton>
+}
+
+export interface MessageButton extends DBModel {
+	text: string
+	payload: string
 }
 
 interface ConversationsState {
 	conversations: Array<Conversation>
 	setConversations: (conversations: Array<Conversation>) => void
 	newConversation: (conversation: Conversation) => void
-	updateConversation: (index: number, conversation: Conversation) => void
+	updateConversation: (conversation: Conversation) => void
 	addMessage: (message: Message) => void
 }
 
@@ -59,10 +65,16 @@ export const useConversationsStore = create<ConversationsState>((set) => ({
 			}
 		})
 	},
-	updateConversation(index, conversation) {
+	updateConversation(conversation) {
 		set((state) => {
 			const conversations = [...state.conversations]
-			conversations[index] = conversation
+			for (let idx = 0; idx < conversations.length; idx++) {
+				if (conversations[idx].ID === conversation.ID) {
+					conversations[idx] = conversation
+					break
+				}
+			}
+
 			return {
 				...state,
 				conversations,

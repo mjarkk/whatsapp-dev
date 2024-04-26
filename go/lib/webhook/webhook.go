@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -31,11 +32,11 @@ func createSignatures(body []byte) map[string]string {
 
 	sha1Hmac := hmac.New(sha1.New, []byte(appSecret))
 	sha1Hmac.Write(body)
-	sha1Signature := "sha1=" + string(sha1Hmac.Sum(nil))
+	sha1Signature := "sha1=" + hex.EncodeToString(sha1Hmac.Sum(nil))
 
 	sha256Hmac := hmac.New(sha256.New, []byte(appSecret))
 	sha256Hmac.Write(body)
-	sha256Signature := "sha256=" + string(sha256Hmac.Sum(nil))
+	sha256Signature := "sha256=" + hex.EncodeToString(sha256Hmac.Sum(nil))
 
 	return map[string]string{
 		"x-hub-signature":     sha1Signature,
@@ -93,6 +94,28 @@ func NotivyMessage(message models.Message, awaitResponse bool) error {
 		return err
 	}
 
+	timestamp := strconv.Itoa(int(message.Timestamp))
+	from := conversation.PhoneNumber
+	bodyMessage := M{
+		"from":      from,
+		"id":        message.WhatsappID,
+		"timestamp": timestamp,
+		"text":      M{"body": message.Message},
+		"type":      "text",
+	}
+	if message.Payload != nil {
+		bodyMessage = M{
+			"from":      from,
+			"id":        message.WhatsappID,
+			"timestamp": timestamp,
+			"type":      "button",
+			"button": M{
+				"payload": *message.Payload,
+				"text":    message.Message,
+			},
+		}
+	}
+
 	data := M{
 		"object": "whatsapp_business_account",
 		"entry": []M{{
@@ -110,13 +133,7 @@ func NotivyMessage(message models.Message, awaitResponse bool) error {
 						"profile": M{"name": "Jhon doe"},
 						"wa_id":   conversation.PhoneNumberId,
 					}},
-					"messages": []M{{
-						"from":      conversation.PhoneNumber,
-						"id":        message.WhatsappID,
-						"timestamp": strconv.Itoa(int(message.Timestamp)),
-						"text":      M{"body": message.Message},
-						"type":      "text",
-					}},
+					"messages": []M{bodyMessage},
 				},
 				"field": "messages",
 			}},
@@ -129,7 +146,12 @@ func NotivyMessage(message models.Message, awaitResponse bool) error {
 	}
 
 	if !awaitResponse {
-		go makeWebhookRequest(payload)
+		go func() {
+			err := makeWebhookRequest(payload)
+			if err != nil {
+				fmt.Println("failed to call webhook, error response:", err.Error())
+			}
+		}()
 		return nil
 	}
 
@@ -139,6 +161,8 @@ func NotivyMessage(message models.Message, awaitResponse bool) error {
 func makeWebhookRequest(payload []byte) error {
 	attempt := 0
 	var lastErr error
+
+outer:
 	for {
 		attempt++
 		switch attempt {
@@ -151,7 +175,7 @@ func makeWebhookRequest(payload []byte) error {
 		case 4:
 			time.Sleep(time.Second * 15)
 		default:
-			break
+			break outer
 		}
 
 		body := bytes.NewBuffer(payload)

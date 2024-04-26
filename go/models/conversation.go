@@ -23,6 +23,7 @@ type Message struct {
 	Message        string          `json:"message"`
 	FooterMessage  *string         `json:"footerMessage"`
 	Timestamp      int64           `json:"timestamp"`
+	Payload        *string         `json:"payload"`
 	Buttons        []MessageButton `json:"buttons"`
 }
 
@@ -66,5 +67,16 @@ func (m *Message) CreateOrAppend(number string) error {
 	}
 
 	m.ConversationID = conversationID
-	return DB.Create(m).Error
+
+	for idx, button := range m.Buttons {
+		button.ConversationID = conversationID
+		m.Buttons[idx] = button
+	}
+
+	err = DB.Create(m).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

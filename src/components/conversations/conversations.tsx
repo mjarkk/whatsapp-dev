@@ -1,33 +1,17 @@
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { fetch, post } from "@/services/fetch"
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from "react"
 import { OpenCloseButton } from "../openCloseButton"
-import {
-	useConversationsStore,
-	type Conversation,
-	type Message,
-} from "@/services/state"
+import { useConversationsStore, type Conversation } from "@/services/state"
+import { NewChatDialog } from "./new"
+import { ShowMessage } from "./singleMessage"
 
 export function Conversations() {
 	const [open, setOpen] = useState(true)
 	const [newConversationOpen, setNewConversationOpen] = useState(false)
-	const {
-		conversations,
-		setConversations,
-		newConversation,
-		updateConversation,
-	} = useConversationsStore()
+	const { conversations, setConversations, newConversation } =
+		useConversationsStore()
 
 	const getData = async () => {
 		const conversationsResponse = await fetch("/api/conversations")
@@ -50,10 +34,9 @@ export function Conversations() {
 			</h2>
 			{conversations && open ? (
 				<div flex flex-wrap gap-4 p-4>
-					{conversations.map((conversation, idx) => (
+					{conversations.map((conversation) => (
 						<Conversation
 							conversation={conversation}
-							updateConversation={(conv) => updateConversation(idx, conv)}
 							key={conversation.phoneNumberId}
 						/>
 					))}
@@ -68,19 +51,15 @@ export function Conversations() {
 	)
 }
 
-function formatDate(date: Date) {
-	const dateFormatter = new Intl.DateTimeFormat("en-US", {
-		timeStyle: "short",
-	})
-	return dateFormatter.format(date)
-}
-
 interface ConversationProps {
 	conversation: Conversation
-	updateConversation: (conversation: Conversation) => void
 }
 
-function Conversation({ conversation, updateConversation }: ConversationProps) {
+function Conversation({ conversation }: ConversationProps) {
+	const { updateConversation } = useConversationsStore()
+	const [msgCount, setMsgCount] = useState(0)
+	const messagesEndRef = useRef<HTMLDivElement>(null)
+
 	const onSendMessage = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 
@@ -94,9 +73,23 @@ function Conversation({ conversation, updateConversation }: ConversationProps) {
 		const response = await post(`/api/conversations/${conversation.ID}`, {
 			message,
 		})
-		const updatedConverstaion = await response.json()
-		updateConversation(updatedConverstaion)
+		updateConversation(await response.json())
 	}
+
+	useEffect(() => {
+		if (msgCount === conversation.messages.length) {
+			return
+		}
+
+		const smooth = msgCount > 0
+		setMsgCount(conversation.messages.length)
+
+		if (messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({
+				behavior: smooth ? "smooth" : "instant",
+			})
+		}
+	}, [msgCount, conversation])
 
 	return (
 		<div key={conversation.phoneNumber} bg-zinc-900 w-100 rounded>
@@ -111,102 +104,17 @@ function Conversation({ conversation, updateConversation }: ConversationProps) {
 			>
 				{conversation.phoneNumber}
 			</h4>
-			<div h-130 overflow-hidden flex flex-col justify-end>
-				{conversation.messages.map((message) => (
-					<ShowMessage key={message.whatsappID} message={message} />
-				))}
+			<div h-130 overflow-y-auto>
+				<div flex flex-col justify-end>
+					{conversation.messages.map((message) => (
+						<ShowMessage key={message.whatsappID} message={message} />
+					))}
+					<div ref={messagesEndRef} />
+				</div>
 			</div>
 			<form bg-zinc-700 onSubmit={onSendMessage}>
 				<Input type="text" name="message" placeholder="message" />
 			</form>
 		</div>
-	)
-}
-
-function ShowMessage({ message }: { message: Message }) {
-	return (
-		<div p-2 flex justify={message.direction === "out" ? "start" : "end"}>
-			<div
-				style={{ maxWidth: "70%" }}
-				inline-block
-				py-1
-				px-2
-				bg-zinc-800
-				rounded
-			>
-				{message.headerMessage ? (
-					<div font-bold>{message.headerMessage}</div>
-				) : undefined}
-				<div>
-					<span text-xs>{formatDate(new Date(message.timestamp))} - </span>
-					{message.message}
-				</div>
-				{message.footerMessage ? (
-					<div font-bold text-sm text-zinc-400 mt-1>
-						{message.footerMessage}
-					</div>
-				) : undefined}
-			</div>
-		</div>
-	)
-}
-
-interface NewChatDialogProps {
-	open: boolean
-	newConversation: (conversation: Conversation) => void
-	close: () => void
-}
-
-function NewChatDialog({ newConversation, open, close }: NewChatDialogProps) {
-	const [state, setState] = useState({
-		message: "Hello world!",
-		phoneNumber: "",
-	})
-
-	const createConversation = async () => {
-		const response = await post("/api/conversations", {
-			phoneNumber: state.phoneNumber,
-			message: state.message,
-		})
-		const conversation = await response.json()
-		newConversation(conversation)
-		setState({
-			message: "Hello world!",
-			phoneNumber: "",
-		})
-	}
-
-	return (
-		<AlertDialog open={open} onOpenChange={() => close()}>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Create a new conversation</AlertDialogTitle>
-				</AlertDialogHeader>
-				<Label htmlFor="phoneNumber">Source phone number</Label>
-				<Input
-					value={state.phoneNumber}
-					onChange={(e) =>
-						setState((s) => ({ ...s, phoneNumber: e.target.value }))
-					}
-					type="text"
-					id="phoneNumber"
-					placeholder="+31600000000"
-				/>
-				<Label htmlFor="message">Message</Label>
-				<Input
-					value={state.message}
-					onChange={(e) => setState((s) => ({ ...s, message: e.target.value }))}
-					type="text"
-					id="message"
-					placeholder="Hello world!"
-				/>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={createConversation}>
-						Start
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
 	)
 }

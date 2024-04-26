@@ -230,9 +230,9 @@ type TemplateOptions struct {
 }
 
 type TemplateComponent struct {
-	Type       string `json:"type"`    // "body", "button"
-	SubType    string `json:"subType"` // "quick_reply" (in case of button)
-	Index      string `json:"index"`   // "0" (in case of button)
+	Type       string `json:"type"`     // "body", "button"
+	SubType    string `json:"sub_type"` // "quick_reply" (in case of button)
+	Index      string `json:"index"`    // "0" (in case of button)
 	Parameters []struct {
 		Type    string `json:"type"`    // "header", "text", "payload"
 		Payload string `json:"payload"` // "hello_world" (in case of payload)
@@ -341,6 +341,7 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 		return customError(c, msg, details)
 	}
 
+	messageButtons := []models.MessageButton{}
 	if buttons != nil {
 		type ButtonPayload struct {
 			Seen    bool
@@ -356,10 +357,10 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 				return customError(c, fmt.Sprintf("Param %s['index'] is required", prefix))
 			}
 			if button.SubType == "" {
-				return customError(c, fmt.Sprintf("Param %s['subType'] is required", prefix))
+				return customError(c, fmt.Sprintf("Param %s['sub_type'] is required", prefix))
 			}
 			if button.SubType != "quick_reply" {
-				return customError(c, fmt.Sprintf("Param %s['subType'] must be one of {QUICK_REPLY}", prefix))
+				return customError(c, fmt.Sprintf("Param %s['sub_type'] must be one of {QUICK_REPLY}", prefix))
 			}
 
 			switch len(button.Parameters) {
@@ -393,12 +394,17 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 				Seen:    true,
 				Payload: firstParam.Payload,
 			}
+
 		}
 
 		for idx, btn := range buttonsPayload {
 			if !btn.Seen {
 				return customError(c, fmt.Sprintf("Button with index %d missing", idx))
 			}
+			messageButtons = append(messageButtons, models.MessageButton{
+				Text:    msgTemplate.TemplateCustomButtons[idx].Text,
+				Payload: &btn.Payload,
+			})
 		}
 
 	}
@@ -410,6 +416,7 @@ func handleSendTemplateMessage(c *fiber.Ctx, template TemplateOptions, to *phone
 		Message:       body,
 		FooterMessage: footer,
 		Timestamp:     time.Now().Unix(),
+		Buttons:       messageButtons,
 	}
 	// Note that templates can be send to everyone
 	err = message.CreateOrAppend(to.Parsed)
