@@ -100,28 +100,32 @@ function Formatted({ text }: { text: string }) {
 		if (c == "_") {
 			if (part.italic) {
 				// Check if previous part was not a space
-				if (!isSpace(text[idx - 1])) {
-					parts.push({ bold: part.italic, italic: false, text: "" })
+				const prevC = text[idx - 1]
+				if (!isSpace(prevC) && prevC !== "_") {
+					parts.push({ ...part, italic: false, text: "" })
 					continue
 				}
 			} else {
 				// Check if the next character is not a space
-				if (!isSpace(text[idx + 1])) {
-					parts.push({ bold: part.bold, italic: true, text: "" })
+				const nextC = text[idx + 1]
+				if (!isSpace(nextC) && nextC !== "_") {
+					parts.push({ ...part, italic: true, text: "" })
 					continue
 				}
 			}
 		} else if (c == "*") {
 			if (part.bold) {
 				// Check if previous part was not a space
-				if (!isSpace(text[idx - 1])) {
-					parts.push({ bold: false, italic: part.italic, text: "" })
+				const prevC = text[idx - 1]
+				if (!isSpace(prevC) && prevC !== "*") {
+					parts.push({ ...part, bold: false, text: "" })
 					continue
 				}
 			} else {
 				// Check if the next character is not a space
-				if (!isSpace(text[idx + 1])) {
-					parts.push({ bold: true, italic: part.italic, text: "" })
+				const nextC = text[idx + 1]
+				if (!isSpace(nextC) && nextC !== "*") {
+					parts.push({ ...part, bold: true, text: "" })
 					continue
 				}
 			}
@@ -129,10 +133,14 @@ function Formatted({ text }: { text: string }) {
 		part.text += c
 	}
 
-	parts[parts.length - 1] = {
-		italic: false,
-		bold: false,
-		text: parts[parts.length - 1].text,
+	const lastPart = parts[parts.length - 1]
+	if (lastPart.italic) {
+		lastPart.italic = false
+		lastPart.text = "_" + lastPart.text
+	}
+	if (lastPart.bold) {
+		lastPart.bold = false
+		lastPart.text = "*" + lastPart.text
 	}
 
 	if (parts.length > 1) {
