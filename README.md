@@ -15,6 +15,8 @@ This API is mainly designed for 2 things:
 go run . --webhook-url http://your-app-webhook.local:8080/webhook
 ```
 
+Replace `https://graph.facebook.com` with an instance of WhatsApp-Dev `http://localhost:1090` and, assuming you have setup your instance of WhatsApp-Dev the same as the real api, this should be 👌.
+
 ## Docker setup and run
 
 ```sh
@@ -29,6 +31,8 @@ docker run \
   ghcr.io/mjarkk/whatsapp-dev:latest \
   app --webhook-url http://your-app-webhook.local:8080/api/webhook
 ```
+
+Replace `https://graph.facebook.com` with an instance of WhatsApp-Dev `http://localhost:1090` and, assuming you have setup your instance of WhatsApp-Dev the same as the real api, this should be 👌.
 
 Now visit http://localhost:1090 to see whatsapp-dev
 
