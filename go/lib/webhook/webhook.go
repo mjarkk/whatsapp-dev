@@ -147,13 +147,48 @@ func NotivyMessage(message models.Message, awaitResponse bool) error {
 
 	if !awaitResponse {
 		go func() {
-			err := makeWebhookRequest(payload)
+			err := makeWebhookRequestWithRandomForcedRetries(payload)
 			if err != nil {
 				fmt.Println("failed to call webhook, error response:", err.Error())
 			}
 		}()
 		return nil
 	}
+
+	return makeWebhookRequestWithRandomForcedRetries(payload)
+}
+
+func makeWebhookRequestWithRandomForcedRetries(payload []byte) error {
+	randomSleepDuration := rand.Intn(int(time.Millisecond * 1500))
+	time.Sleep(time.Duration(randomSleepDuration))
+
+	err := makeWebhookRequest(payload)
+	if err != nil {
+		return err
+	}
+
+	if rand.Intn(100) > 20 {
+		return nil
+	}
+	// Yolo retry 20% of all request.
+	// Facebooks api also does this and can be a source of bugs hence why we also do this.
+
+	randomSleepDuration = rand.Intn(int(time.Second * 10))
+	time.Sleep(time.Duration(randomSleepDuration))
+
+	err = makeWebhookRequest(payload)
+	if err != nil {
+		return err
+	}
+
+	if rand.Intn(100) > 10 {
+		return nil
+	}
+	// Yolo retry 10% of all request (this should be 2% of the time in total).
+	// Same reason as above
+
+	randomSleepDuration = rand.Intn(int(time.Minute))
+	time.Sleep(time.Duration(randomSleepDuration))
 
 	return makeWebhookRequest(payload)
 }

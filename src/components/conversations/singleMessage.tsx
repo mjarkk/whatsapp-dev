@@ -142,10 +142,6 @@ function Formatted({ text }: { text: string }) {
 		lastPart.text = "*" + lastPart.text
 	}
 
-	if (parts.length > 1) {
-		console.log(parts)
-	}
-
 	return parts.map((el, idx) => (
 		<span
 			key={idx}
