@@ -11,7 +11,7 @@ WORKDIR /app
 RUN npm i && npm run build
 
 # Build the runtime container
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.27
 
 WORKDIR /usr/src/app
 
