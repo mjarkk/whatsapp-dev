@@ -104,7 +104,8 @@ func Create(c *fiber.Ctx) error {
 	headers := c.GetReqHeaders()
 	authHeader := ""
 	hasContentType := false
-	for key, value := range headers {
+	for key, values := range headers {
+		value := values[len(values)-1]
 		switch strings.ToLower(key) {
 		case "content-type":
 			if strings.ToLower(value) != "application/json" {
